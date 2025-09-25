@@ -145,6 +145,8 @@ export const clearAllData = (): void => {
 
 // 영문 룬 이름을 한글로 변환하는 매핑
 const RUNE_NAME_MIGRATION_MAP: Record<string, string> = {
+  // 기존 룬 이름 마이그레이션
+  '슐': '주울',
   'El': '엘',
   'Eld': '엘드',
   'Tir': '티르',
@@ -154,7 +156,7 @@ const RUNE_NAME_MIGRATION_MAP: Record<string, string> = {
   'Tal': '탈',
   'Ral': '랄',
   'Ort': '오르트',
-  'Thul': '슐',
+  'Thul': '주울',
   'Amn': '앰',
   'Sol': '솔',
   'Shael': '샤엘',
@@ -226,5 +228,53 @@ export const migrateRuneNamesToKorean = (): void => {
     }
   } catch (error) {
     console.error('Error during rune name migration:', error)
+  }
+}
+
+export const exportData = (): string => {
+  if (!isClient) return '{}'
+
+  const data = {
+    huntingAreas: storage.get(STORAGE_KEYS.HUNTING_AREAS, []),
+    customAreas: storage.get(STORAGE_KEYS.CUSTOM_AREAS, []),
+    userStats: storage.get(STORAGE_KEYS.USER_STATS, {}),
+    selectedArea: storage.get(STORAGE_KEYS.SELECTED_AREA, null),
+    exportDate: new Date().toISOString(),
+    version: '1.0'
+  }
+
+  return JSON.stringify(data, null, 2)
+}
+
+export const importData = (jsonData: string): { success: boolean; message: string } => {
+  if (!isClient) return { success: false, message: '클라이언트에서만 사용 가능합니다.' }
+
+  try {
+    const data = JSON.parse(jsonData)
+
+    // 데이터 유효성 검사
+    if (!data.huntingAreas || !Array.isArray(data.huntingAreas)) {
+      return { success: false, message: '유효하지 않은 데이터 형식입니다.' }
+    }
+
+    // 백업 생성
+    const backup = {
+      huntingAreas: storage.get(STORAGE_KEYS.HUNTING_AREAS, []),
+      customAreas: storage.get(STORAGE_KEYS.CUSTOM_AREAS, []),
+      userStats: storage.get(STORAGE_KEYS.USER_STATS, {}),
+      selectedArea: storage.get(STORAGE_KEYS.SELECTED_AREA, null)
+    }
+
+    storage.set('BACKUP_' + Date.now(), backup)
+
+    // 데이터 가져오기
+    if (data.huntingAreas) storage.set(STORAGE_KEYS.HUNTING_AREAS, data.huntingAreas)
+    if (data.customAreas) storage.set(STORAGE_KEYS.CUSTOM_AREAS, data.customAreas)
+    if (data.userStats) storage.set(STORAGE_KEYS.USER_STATS, data.userStats)
+    if (data.selectedArea !== undefined) storage.set(STORAGE_KEYS.SELECTED_AREA, data.selectedArea)
+
+    return { success: true, message: '데이터를 성공적으로 가져왔습니다!' }
+  } catch (error) {
+    return { success: false, message: 'JSON 파싱 오류: ' + (error as Error).message }
   }
 }

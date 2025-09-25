@@ -7,7 +7,7 @@ import { analytics } from '@/lib/analytics'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Gem, Diamond, Star, Crown, Sparkles } from 'lucide-react'
+import { Gem, Diamond, Star, Crown, Sparkles, Key } from 'lucide-react'
 
 interface LootRecorderProps {
   areaId: string
@@ -46,6 +46,17 @@ export default function LootRecorder({ areaId, areaName, onLootAdded }: LootReco
     setTimeout(() => {
       setClickedRune(null)
     }, 500)
+  }
+
+  const handleKeyClick = (keyName: string, keyType: 'terror' | 'hate' | 'destruction') => {
+    addLootRecord(areaId, {
+      type: 'key',
+      name: keyName,
+      keyType: keyType
+    })
+
+    analytics.trackLootRecord('key', keyName, areaName)
+    onLootAdded()
   }
 
 
@@ -123,6 +134,54 @@ export default function LootRecorder({ areaId, areaName, onLootAdded }: LootReco
             })}
           </div>
         </div>
+
+        {(areaId === 'countess' || areaId === 'diablo' || areaId === 'baal') && (
+          <>
+            <Separator className="bg-border" />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium leading-none">특수 아이템</h4>
+                <p className="text-xs text-muted-foreground">
+                  {areaId === 'countess' && '백작부인 전용 드랍 아이템'}
+                  {areaId === 'diablo' && '디아블로 전용 드랍 아이템'}
+                  {areaId === 'baal' && '바알 전용 드랍 아이템'}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                {areaId === 'countess' && (
+                  <Button
+                    onClick={() => handleKeyClick('공포의 열쇠', 'terror')}
+                    variant="outline"
+                    className="flex items-center gap-2 border-red-500/20 bg-red-500/5 text-red-600 hover:bg-red-500/10 hover:border-red-500/40"
+                  >
+                    <Key className="h-4 w-4" />
+                    공포의 열쇠
+                  </Button>
+                )}
+                {areaId === 'diablo' && (
+                  <Button
+                    onClick={() => handleKeyClick('증오의 열쇠', 'hate')}
+                    variant="outline"
+                    className="flex items-center gap-2 border-orange-500/20 bg-orange-500/5 text-orange-600 hover:bg-orange-500/10 hover:border-orange-500/40"
+                  >
+                    <Key className="h-4 w-4" />
+                    증오의 열쇠
+                  </Button>
+                )}
+                {areaId === 'baal' && (
+                  <Button
+                    onClick={() => handleKeyClick('파괴의 열쇠', 'destruction')}
+                    variant="outline"
+                    className="flex items-center gap-2 border-purple-500/20 bg-purple-500/5 text-purple-600 hover:bg-purple-500/10 hover:border-purple-500/40"
+                  >
+                    <Key className="h-4 w-4" />
+                    파괴의 열쇠
+                  </Button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   )

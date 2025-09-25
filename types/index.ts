@@ -16,9 +16,10 @@ export interface RuneData {
 
 export interface LootRecord {
   id: string
-  type: 'rune' | 'item'
+  type: 'rune' | 'key' | 'item'
   name: string
   runeLevel?: number
+  keyType?: 'terror' | 'hate' | 'destruction'
   timestamp: number
   areaId: string
 }

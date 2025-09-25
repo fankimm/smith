@@ -1,14 +1,14 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { HuntingArea } from '@/types'
-import { getUserStats, clearAllData } from '@/lib/storage'
+import { getUserStats, clearAllData, exportData, importData } from '@/lib/storage'
 import { useHydrated } from '@/hooks/useHydrated'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Download, Upload } from 'lucide-react'
 
 interface StatsPanelProps {
   areas: HuntingArea[]
@@ -17,6 +17,7 @@ interface StatsPanelProps {
 
 export default function StatsPanel({ areas, onDataCleared }: StatsPanelProps) {
   const hydrated = useHydrated()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const stats = hydrated ? getUserStats() : {
     totalRuns: 0,
@@ -41,6 +42,47 @@ export default function StatsPanel({ areas, onDataCleared }: StatsPanelProps) {
       window.location.reload()
     }
   }, [hydrated, onDataCleared])
+
+  const handleExportData = useCallback(() => {
+    const data = exportData()
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `smith-backup-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }, [])
+
+  const handleImportData = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const content = e.target?.result as string
+      const result = importData(content)
+
+      if (result.success) {
+        alert(result.message)
+        onDataCleared() // 데이터 새로고침
+      } else {
+        alert(result.message)
+      }
+    }
+    reader.readAsText(file)
+
+    // 파일 입력 초기화
+    if (event.target) {
+      event.target.value = ''
+    }
+  }, [onDataCleared])
+
+  const triggerFileInput = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
 
   return (
     <Card className="border-border">
@@ -106,15 +148,46 @@ export default function StatsPanel({ areas, onDataCleared }: StatsPanelProps) {
               마지막 방문: {new Date(stats.lastVisit).toLocaleDateString()}
             </div>
 
-            <Button
-              variant="destructive"
-              onClick={handleClearData}
-              className="w-full h-9"
-              size="sm"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              모든 데이터 초기화
-            </Button>
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleExportData}
+                  className="h-9"
+                  size="sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  내보내기
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={triggerFileInput}
+                  className="h-9"
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  가져오기
+                </Button>
+              </div>
+
+              <Button
+                variant="destructive"
+                onClick={handleClearData}
+                className="w-full h-9"
+                size="sm"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                모든 데이터 초기화
+              </Button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImportData}
+              style={{ display: 'none' }}
+            />
           </>
         )}
       </CardContent>

@@ -93,7 +93,7 @@ export const RUNES: RuneData[] = [
   { id: 7, name: '탈', level: 7, englishName: 'Tal' },
   { id: 8, name: '랄', level: 8, englishName: 'Ral' },
   { id: 9, name: '오르트', level: 9, englishName: 'Ort' },
-  { id: 10, name: '슐', level: 10, englishName: 'Thul' },
+  { id: 10, name: '주울', level: 10, englishName: 'Thul' },
   { id: 11, name: '앰', level: 11, englishName: 'Amn' },
   { id: 12, name: '솔', level: 12, englishName: 'Sol' },
   { id: 13, name: '샤엘', level: 13, englishName: 'Shael' },

@@ -127,18 +127,18 @@ export default function Home() {
             </>
           )}
 
-          {selectedArea && selectedArea.loot.filter(loot => loot.type === 'rune').length > 0 && (
+          {selectedArea && selectedArea.loot.filter(loot => loot.type === 'rune' || loot.type === 'key').length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  {selectedArea.name} - 룬 목록
-                  <Badge variant="secondary">{selectedArea.loot.filter(loot => loot.type === 'rune').length}개</Badge>
+                  {selectedArea.name} - 전리품 목록
+                  <Badge variant="secondary">{selectedArea.loot.filter(loot => loot.type === 'rune' || loot.type === 'key').length}개</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {[...selectedArea.loot]
-                    .filter(loot => loot.type === 'rune')
+                    .filter(loot => loot.type === 'rune' || loot.type === 'key')
                     .sort((a, b) => b.timestamp - a.timestamp)
                     .map((loot) => (
                       <div
@@ -151,8 +151,8 @@ export default function Home() {
                         title="클릭하여 삭제"
                       >
                         <div className="flex items-center gap-2">
-                          <Badge variant={loot.type === 'rune' ? 'default' : 'outline'}>
-                            {loot.type === 'rune' ? '룬' : '아이템'}
+                          <Badge variant={loot.type === 'rune' ? 'default' : loot.type === 'key' ? 'destructive' : 'outline'}>
+                            {loot.type === 'rune' ? '룬' : loot.type === 'key' ? '열쇠' : '아이템'}
                           </Badge>
                           <span className="font-medium">
                             {loot.name}
