@@ -78,7 +78,7 @@ class Analytics {
     })
   }
 
-  trackLootRecord(type: 'rune' | 'item', name: string, areaName: string): void {
+  trackLootRecord(type: 'rune' | 'key' | 'item', name: string, areaName: string): void {
     this.track('loot_recorded', {
       loot_type: type,
       loot_name: name,
