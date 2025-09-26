@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { RUNES } from '@/lib/constants'
-import { addLootRecord } from '@/lib/storage'
 import { analytics } from '@/lib/analytics'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,7 +11,7 @@ import { Gem, Diamond, Star, Crown, Sparkles, Key } from 'lucide-react'
 interface LootRecorderProps {
   areaId: string
   areaName: string
-  onLootAdded: () => void
+  onLootAdded: (loot: { type: 'rune' | 'key' | 'item'; name: string; runeLevel?: number; keyType?: 'terror' | 'hate' | 'destruction' }) => void
 }
 
 export default function LootRecorder({ areaId, areaName, onLootAdded }: LootRecorderProps) {
@@ -30,17 +29,21 @@ export default function LootRecorder({ areaId, areaName, onLootAdded }: LootReco
   }
 
   const handleRuneClick = (rune: typeof RUNES[0]) => {
+    console.log('🎯 룬 버튼 클릭됨:', rune.name, 'in area:', areaName)
+
     // 클릭된 룬 피드백 표시
     setClickedRune(rune.id)
 
-    addLootRecord(areaId, {
-      type: 'rune',
+    const loot = {
+      type: 'rune' as const,
       name: rune.name,
       runeLevel: rune.level
-    })
+    }
 
+    console.log('🎁 룬 추가 시작:', loot)
     analytics.trackLootRecord('rune', rune.name, areaName)
-    onLootAdded()
+    onLootAdded(loot)
+    console.log('✅ 룬 추가 콜백 완료')
 
     // 500ms 후 피드백 상태 초기화
     setTimeout(() => {
@@ -49,14 +52,14 @@ export default function LootRecorder({ areaId, areaName, onLootAdded }: LootReco
   }
 
   const handleKeyClick = (keyName: string, keyType: 'terror' | 'hate' | 'destruction') => {
-    addLootRecord(areaId, {
-      type: 'key',
+    const loot = {
+      type: 'key' as const,
       name: keyName,
       keyType: keyType
-    })
+    }
 
     analytics.trackLootRecord('key', keyName, areaName)
-    onLootAdded()
+    onLootAdded(loot)
   }
 
 

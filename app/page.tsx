@@ -22,11 +22,11 @@ export default function Home() {
     addCustomArea,
     resetAreaCount,
     removeCustomArea,
-    refreshAreas
+    refreshAreas,
+    addLootToArea
   } = useHuntingAreas()
 
   const [isAddingCustomArea, setIsAddingCustomArea] = useState(false)
-  const [forceUpdate, setForceUpdate] = useState(0)
 
   const popularAreas = areas.filter(area => area.category === 'popular')
   const customAreas = areas.filter(area => area.category === 'custom')
@@ -36,14 +36,8 @@ export default function Home() {
     selectArea(newAreaId)
   }
 
-  const handleLootAdded = () => {
-    refreshAreas()
-    setForceUpdate(prev => prev + 1)
-  }
-
   const handleDataCleared = () => {
     refreshAreas()
-    setForceUpdate(prev => prev + 1)
   }
 
   return (
@@ -122,7 +116,7 @@ export default function Home() {
               <LootRecorder
                 areaId={selectedArea.id}
                 areaName={selectedArea.name}
-                onLootAdded={handleLootAdded}
+                onLootAdded={(loot) => addLootToArea(selectedArea.id, loot)}
               />
             </>
           )}
@@ -146,7 +140,7 @@ export default function Home() {
                         className="flex justify-between items-center p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70 transition-colors group"
                         onClick={() => {
                           removeLootRecord(selectedArea.id, loot.id)
-                          handleLootAdded()
+                          refreshAreas()
                         }}
                         title="클릭하여 삭제"
                       >

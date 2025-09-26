@@ -6,7 +6,8 @@ import {
   getSelectedAreaId,
   saveSelectedAreaId,
   incrementAreaCount,
-  migrateRuneNamesToKorean
+  migrateRuneNamesToKorean,
+  addLootRecord
 } from '@/lib/storage'
 import { analytics } from '@/lib/analytics'
 import { useHydrated } from './useHydrated'
@@ -47,22 +48,25 @@ export const useHuntingAreas = () => {
   }, [areas])
 
   const incrementCount = useCallback((areaId: string) => {
-    const updatedAreas = areas.map(area => {
-      if (area.id === areaId) {
-        const updated = {
-          ...area,
-          count: area.count + 1,
-          totalRuns: area.totalRuns + 1
-        }
-        analytics.trackAreaIncrement(area.name)
-        return updated
-      }
-      return area
-    })
+    console.log('🔄 incrementCount 호출됨 - areaId:', areaId)
 
-    updateAreas(updatedAreas)
+    // 먼저 로컬 스토리지를 업데이트
+    console.log('💾 incrementAreaCount 호출 전')
     incrementAreaCount(areaId)
-  }, [areas, updateAreas])
+    console.log('💾 incrementAreaCount 호출 완료')
+
+    // 그 다음 최신 데이터를 불러와서 로컬 상태 업데이트
+    console.log('🔄 최신 데이터로 상태 업데이트 시작')
+    const updatedAreas = getInitialHuntingAreas()
+    setAreas(updatedAreas)
+    console.log('✅ incrementCount 완료')
+
+    // 분석 추적
+    const area = updatedAreas.find(a => a.id === areaId)
+    if (area) {
+      analytics.trackAreaIncrement(area.name)
+    }
+  }, [hydrated])
 
   const addCustomArea = useCallback((name: string) => {
     const newArea: HuntingArea = {
@@ -104,6 +108,23 @@ export const useHuntingAreas = () => {
     }
   }, [hydrated])
 
+  const addLootToArea = useCallback((areaId: string, loot: { type: 'rune' | 'key' | 'item'; name: string; runeLevel?: number; keyType?: 'terror' | 'hate' | 'destruction' }) => {
+    console.log('🎯 addLootToArea 호출됨 - areaId:', areaId, 'loot:', loot)
+
+    // 로컬 스토리지에 저장
+    console.log('💾 addLootRecord 호출 전')
+    addLootRecord(areaId, loot)
+    console.log('💾 addLootRecord 호출 완료')
+
+    // 로컬 상태 업데이트 - 로컬 스토리지 업데이트 후 다시 불러오기
+    console.log('🔄 getInitialHuntingAreas 호출 전')
+    const updatedAreas = getInitialHuntingAreas()
+    console.log('🔄 getInitialHuntingAreas 호출 완료, areas 업데이트 중')
+    setAreas(updatedAreas)
+    console.log('✅ addLootToArea 완료')
+  }, [hydrated])
+
+
   const selectedArea = selectedAreaId ? areas.find(area => area.id === selectedAreaId) : null
 
   return {
@@ -115,6 +136,7 @@ export const useHuntingAreas = () => {
     addCustomArea,
     resetAreaCount,
     removeCustomArea,
-    refreshAreas
+    refreshAreas,
+    addLootToArea
   }
 }

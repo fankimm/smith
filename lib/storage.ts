@@ -89,10 +89,21 @@ export const saveSelectedAreaId = (areaId: string | null): void => {
 }
 
 export const addLootRecord = (areaId: string, loot: Omit<LootRecord, 'id' | 'timestamp' | 'areaId'>): void => {
-  const areas = getInitialHuntingAreas()
-  const areaIndex = areas.findIndex(area => area.id === areaId)
+  console.log('📦 addLootRecord 시작 - areaId:', areaId, 'loot:', loot)
 
-  if (areaIndex === -1) return
+  console.log('📖 getInitialHuntingAreas 호출 전')
+  const areas = getInitialHuntingAreas()
+  console.log('📖 getInitialHuntingAreas 호출 완료, areas 개수:', areas.length)
+
+  const areaIndex = areas.findIndex(area => area.id === areaId)
+  console.log('🔍 areaIndex:', areaIndex)
+
+  if (areaIndex === -1) {
+    console.log('❌ 영역을 찾을 수 없음, 함수 종료')
+    return
+  }
+
+  console.log('📊 영역 찾음:', areas[areaIndex].name, '현재 count:', areas[areaIndex].count, 'totalRuns:', areas[areaIndex].totalRuns)
 
   const newLootRecord: LootRecord = {
     id: crypto.randomUUID(),
@@ -101,23 +112,44 @@ export const addLootRecord = (areaId: string, loot: Omit<LootRecord, 'id' | 'tim
     ...loot
   }
 
+  console.log('🎁 새 전리품 레코드 생성:', newLootRecord)
+
   areas[areaIndex].loot.push(newLootRecord)
+  console.log('💾 saveHuntingAreas 호출 전')
   saveHuntingAreas(areas)
+  console.log('💾 saveHuntingAreas 호출 완료')
 
   const stats = getUserStats()
   stats.totalLoot += 1
   saveUserStats(stats)
+  console.log('✅ addLootRecord 완료')
 }
 
 export const incrementAreaCount = (areaId: string): void => {
-  const areas = getInitialHuntingAreas()
-  const areaIndex = areas.findIndex(area => area.id === areaId)
+  console.log('⬆️ incrementAreaCount 시작 - areaId:', areaId)
 
-  if (areaIndex === -1) return
+  console.log('📖 getInitialHuntingAreas 호출 전')
+  const areas = getInitialHuntingAreas()
+  console.log('📖 getInitialHuntingAreas 호출 완료, areas 개수:', areas.length)
+
+  const areaIndex = areas.findIndex(area => area.id === areaId)
+  console.log('🔍 areaIndex:', areaIndex)
+
+  if (areaIndex === -1) {
+    console.log('❌ 영역을 찾을 수 없음, 함수 종료')
+    return
+  }
+
+  console.log('📊 영역 찾음:', areas[areaIndex].name, '현재 count:', areas[areaIndex].count, 'totalRuns:', areas[areaIndex].totalRuns)
 
   areas[areaIndex].count += 1
   areas[areaIndex].totalRuns += 1
+
+  console.log('📈 카운트 증가 완료:', areas[areaIndex].name, '새 count:', areas[areaIndex].count, '새 totalRuns:', areas[areaIndex].totalRuns)
+
+  console.log('💾 saveHuntingAreas 호출 전')
   saveHuntingAreas(areas)
+  console.log('💾 saveHuntingAreas 호출 완료')
 
   const stats = getUserStats()
   stats.totalRuns += 1
@@ -135,6 +167,7 @@ export const incrementAreaCount = (areaId: string): void => {
   stats.favoriteArea = favoriteArea?.name || ''
 
   saveUserStats(stats)
+  console.log('✅ incrementAreaCount 완료')
 }
 
 export const clearAllData = (): void => {
